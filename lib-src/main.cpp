@@ -4,7 +4,6 @@
 #include <iostream>
 #include <fstream>
 #include <cmath>
-#include "Models/Linear.hpp"
 #include "Models/MLP.hpp"
 
 
@@ -31,27 +30,6 @@ Color getStateColor(State s) {
     }
 }
 
-std::vector<double> stateHotEncode(State s) {
-    switch (s) {
-        case SOLID:
-            return {1, 0, 0};
-        case LIQUID:
-            return {0, 1, 0};
-        case GAS:
-            return {0, 0, 1};
-        default:
-            return {0, 0, 0};
-    }
-}
-
-int stateHotDecode(std::vector<double> s) {
-    // Return max index
-    int max_i = 0;
-    for (int i = 1; i < s.size(); i++) {
-        if (s[i] > s[max_i]) max_i = i;
-    }
-    return max_i;
-}
 
 State getState(double T, double P) {
     ///Not the real equation, just for testing purposes
@@ -102,6 +80,8 @@ void writeBMP(const char* filename, int w, int h, const std::vector<Color>& pixe
             }
         }
     }
+
+    file.close();
 }
 
 float randomFloat(float a, float b) {
@@ -133,67 +113,59 @@ int main() {
     int height = 300;
     int n_points = 10000;
     int epochs = 1000;
-    int epochs2 = 500000;
-    double training_rate = 1.0/10000.0;
-    double training_rate2 = 1.0/500000.0;
+    double training_rate = 1.0/100000.0;
+    MachineLearning::Activation activation = MachineLearning::SIGMOID;
+    MachineLearning::Sampling sampling = MachineLearning::BATCH_GRADIANT_DESCENT;
+    int batch_size = 100;
+    bool verbose = true;
+    bool classify = true;
+    std::vector<int> layers = {2, 4, 4, 4, 1};
 
-    /// Init output BMP
-    std::vector<Color> pixels(width * height);
-    std::vector<Color> pixels2(width * height);
-    for (int i = 0; i < width * height; i++) {
-        pixels[i].r = 255;
-        pixels[i].g = 255;
-        pixels[i].b = 255;
-
-        pixels2[i].r = 255;
-        pixels2[i].g = 255;
-        pixels2[i].b = 255;
-    }
-
-    srand(time(nullptr));
-
-    ///Randomly generate training data
+    ///Tests model by randomly generating training data
     /// Training Data: Simplified water phase:
     /**
      * 0: Solid
      * 1: Liquid
      * 2: Gas
      */
+
+    srand(time(nullptr));
+
+    /// Init output BMP
+    std::vector<Color> pixels(width * height);
+    for (int i = 0; i < width * height; i++) {
+        pixels[i].r = 255;
+        pixels[i].g = 255;
+        pixels[i].b = 255;
+    }
+
     std::vector<std::vector<double>> X(n_points);
-    std::vector<double> Y(n_points);
-    std::vector<std::vector<double>> X_Multi(n_points);
-    std::vector<std::vector<double>> Y_Multi(n_points);
+    std::vector<std::vector<double>> Y(n_points);
 
     for (int i = 0; i < n_points; i++) {
         double T = randomFloat(-10, 125);
         double P = randomFloat(0,20);
 
-        ///Not the real equation, just for testing purposes
         int state = getState(T, P);
 
         X[i] = {T, P};
-        Y[i] = state;
-        Y_Multi[i] = stateHotEncode((State)state);
+        Y[i] = {(double)state/2.0};
 
-        //Test value generation
         int id = pixIndex(width, height, 135, 20, T+10, P);
         Color c = getStateColor((State)state);
         pixels[id].r = c.r;
         pixels[id].g = c.g;
         pixels[id].b = c.b;
-
-        pixels2[id].r = c.r;
-        pixels2[id].g = c.g;
-        pixels2[id].b = c.b;
     }
 
     std::vector<std::pair<double, double>> minmax;
     minmax.emplace_back(-10, 125);
     minmax.emplace_back(0, 20);
-    X_Multi = MachineLearning::normalize(X, minmax);
+    X = MachineLearning::normalize(X, minmax);
 
-    MachineLearning::Linear Linear(2, 0);
-    Linear.train(X, Y, training_rate, epochs);
+    MachineLearning::MLP MLP(layers, activation);
+
+    MLP.train(X, Y, classify, training_rate, epochs, verbose, sampling, batch_size);
 
     for (int i = 0; i < pixels.size(); ++i) {
         Color c = pixels[i];
@@ -203,46 +175,20 @@ int main() {
         auto TP = getTP(width, height, 135, 20, i);
         T = TP.first - 10;
         P = TP.second;
+        auto TPN = MachineLearning::s_normalize({T, P}, minmax);
 
-        int pred = round(Linear.predict({T, P}));
-        if(pred < 0) pred = 0;
-        else if(pred > 2) pred = 2;
+        double pred = MLP.predict(TPN, true)[0]*2;
+        int state = round(pred);
+        if(state < 0) state = 0;
+        else if(state > 2) state = 2;
 
-        Color s = getStateColor((State)pred);
+        Color s = getStateColor((State)state);
         pixels[i].r = s.r/4;
         pixels[i].g = s.g/4;
         pixels[i].b = s.b/4;
     }
 
-    writeBMP("linear.bmp", width, height, pixels);
-
-    std::cout << "Linear finished" << std::endl;
-
-    MachineLearning::MLP MLP({2, 5, 3});
-
-    std::cout << "Testing MLP" << std::endl;
-
-    MLP.train(X_Multi, Y_Multi, true, training_rate2, epochs2);
-
-    for (int i = 0; i < pixels.size(); ++i) {
-        Color c = pixels2[i];
-        if(c.r != 255 || c.g != 255 || c.b != 255) continue;
-
-        double T, P;
-        auto TP = getTP(width, height, 135, 20, i);
-        T = TP.first - 10;
-        P = TP.second;
-
-        auto pred = MLP.predict({T, P}, true);
-        std::pair<double, double> minmax2 = {-1, 1};
-        pred = MachineLearning::s_normalize(pred, {minmax2, minmax2, minmax2});
-
-        pixels2[i].r = pred[0]*255;
-        pixels2[i].g = pred[1]*255;
-        pixels2[i].b = pred[2]*255;
-    }
-
-    writeBMP("mlp.bmp", width, height, pixels2);
+    writeBMP("mlp.bmp", width, height, pixels);
 
     return 0;
 }
