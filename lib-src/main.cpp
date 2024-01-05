@@ -112,14 +112,14 @@ std::pair<double, double> getTP(int W, int H, int w, int h, int id){
 int main() {
     int width = 300;
     int height = 300;
-    int n_points = 10000;
-    int epochs = 1000;
+    int n_points = 5000;
+    int epochs = 5000;
     double training_rate = 1.0/100000.0;
     MachineLearning::Activation activation = MachineLearning::SIGMOID;
-    MachineLearning::Sampling sampling = MachineLearning::BATCH_GRADIANT_DESCENT;
+    MachineLearning::Sampling sampling = MachineLearning::STOCHASTIC_GRADIANT_DESCENT;
     int batch_size = 100;
     bool verbose = true;
-    bool classify = true;
+    bool classify = false;
     std::vector<int> layers = {2, 4, 4, 4, 1};
 
     ///Tests model by randomly generating training data
@@ -178,7 +178,7 @@ int main() {
         P = TP.second;
         auto TPN = MachineLearning::s_normalize({T, P}, minmax);
 
-        double pred = MLP.predict(TPN, true)[0]*2;
+        double pred = MLP.predict(TPN, classify)[0]*2;
         int state = round(pred);
         if(state < 0) state = 0;
         else if(state > 2) state = 2;

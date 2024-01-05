@@ -122,7 +122,7 @@ namespace MachineLearning {
             if(batch_size > X.size()) return false;
         }
         for(int e = 0; e < epochs; e++){
-            if(verbose) std::cout << "Epoch " << e+1 << "/" << epochs << std::endl;
+            if(verbose) std::cout << "Epoch " << e+1 << "/" << epochs << "\n";
 
             std::vector<double> x;
             std::vector<double> y;
@@ -146,11 +146,17 @@ namespace MachineLearning {
                     process_weights(training_rate);
                     break;
                 case STOCHASTIC_GRADIANT_DESCENT:
-
+                    for (int i = 0; i < X.size(); i++) {
+                        x = X[i];
+                        y = Y[i];
+                        propagate_forward(x, classify);
+                        propagate_backwards(y, classify);
+                        process_weights(training_rate);
+                    }
                     break;
                 case MINI_BATCH_GRADIANT_DESCENT:
                     k = randomInt(0, X.size()-batch_size);
-                    for (int i = k; i < batch_size; ++i) {
+                    for (int i = k; i < k + batch_size; ++i) {
                         x = X[i];
                         y = Y[i];
                         propagate_forward(x, classify);
@@ -160,5 +166,9 @@ namespace MachineLearning {
             }
         }
         return true;
+    }
+
+    std::vector<std::vector<std::vector<double>>> MLP::get_weights() const {
+        return weights;
     }
 }
