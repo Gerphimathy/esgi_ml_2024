@@ -2,35 +2,12 @@
 #include <valarray>
 #include <iostream>
 #include "MLP.hpp"
+#include "../ranges.hpp"
 
 namespace MachineLearning {
-    float randomFloat(float a, float b) {
-        return ((b - a) * ((float)rand() / RAND_MAX)) + a;
-    }
-    int randomInt(int a, int b) {
-        return (int) ((b - a) * ((float)rand() / RAND_MAX)) + a;
-    }
-    std::vector<std::vector<double>> normalize(const std::vector<std::vector<double>> &X, std::vector<std::pair<double, double>> minmax){
-        std::vector<std::vector<double>> X_norm;
-        for(const auto & i : X){
-            X_norm.emplace_back(s_normalize(i, minmax));
-        }
-        return X_norm;
-    }
-    std::vector<double> s_normalize(const std::vector<double> &x, std::vector<std::pair<double, double>> minmax){
-        std::vector<double> x_norm;
-        if(minmax.size() != x.size()) return x_norm;
-        for(int j = 0; j < x.size(); j++){
-            x_norm.push_back((x[j] - minmax[j].first) / (minmax[j].second - minmax[j].first));
-        }
-        return x_norm;
-    }
-
-    double rescale(double x, double old_min, double old_max, double new_min, double new_max){
-        return (x - old_min) * (new_max - new_min) / (old_max - old_min) + new_min;
-    }
-
     MLP::MLP(const std::vector<int> &npl, Activation a) {
+        if(npl.empty()) return;
+
         activation = a;
 
         dimensions = npl;
@@ -64,7 +41,9 @@ namespace MachineLearning {
     double MLP::activate(double x) {
         switch(activation){
             case SIGMOID:
-                return 1.0 / (1.0 + exp(-x));
+                if(x < -45.0) return 0.0;
+                else if(x > 45.0) return 1.0;
+                else return 1.0 / (1.0 + exp(-x));
             case TANH:
                 return tanh(x);
             case RELU:
@@ -72,6 +51,7 @@ namespace MachineLearning {
             case LEAKY_RELU:
                 return x > 0 ? x : 0.01 * x;
             case SOFTMAX:
+                if(x > 700.0) x = 700;
                 return exp(x);
             default:
                 return 0.0;
@@ -105,7 +85,7 @@ namespace MachineLearning {
         return outputs;
     }
 
-    void MLP::process_weights(double training_rate){
+    void MLP::process_weights(const double &training_rate){
         for (int l = 1; l < L+1; l++){
             for(int i = 0; i < dimensions[l-1]+1; i++){
                 for(int j = 1; j < dimensions[l]+1; j++){
@@ -115,7 +95,7 @@ namespace MachineLearning {
         }
     }
 
-    void MLP::propagate_backwards(std::vector<double> &y, bool classify){
+    void MLP::propagate_backwards(const std::vector<double> &y, bool classify){
         for(int j = 1; j < dimensions[L]+1; j++){
             deltas[L][j] = X[L][j] - y[j-1];
             if(classify) deltas[L][j] *= (1 - X[L][j]*X[L][j]);

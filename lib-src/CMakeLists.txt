@@ -10,6 +10,8 @@ add_executable(lib_src
         Models/Linear.hpp
         Models/MLP.cpp
         Models/MLP.hpp
+        ranges.cpp
+        ranges.hpp
 )
 
 target_link_libraries(lib_src)

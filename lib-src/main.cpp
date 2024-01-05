@@ -5,6 +5,7 @@
 #include <fstream>
 #include <cmath>
 #include "Models/MLP.hpp"
+#include "ranges.hpp"
 
 
 struct Color {

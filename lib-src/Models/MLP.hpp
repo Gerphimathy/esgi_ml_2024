@@ -3,10 +3,6 @@
 #include <vector>
 
 namespace MachineLearning {
-    std::vector<double> s_normalize(const std::vector<double> &x, std::vector<std::pair<double, double>> minmax);
-    std::vector<std::vector<double>> normalize(const std::vector<std::vector<double>> &X, std::vector<std::pair<double, double>> minmax);
-    double rescale(double x, double old_min, double old_max, double new_min, double new_max);
-
     enum Activation {
         SIGMOID,
         TANH,
@@ -33,8 +29,8 @@ namespace MachineLearning {
 
             void propagate_forward(const std::vector<double>& inputs, bool classify);
             double activate(double x);
-            void propagate_backwards(std::vector<double> &y, bool classify);
-            void process_weights(double training_rate);
+            void propagate_backwards(const std::vector<double> &y, bool classify);
+            void process_weights(const double &training_rate);
 
         public:
             MLP(const std::vector<int>& layers, Activation a);
