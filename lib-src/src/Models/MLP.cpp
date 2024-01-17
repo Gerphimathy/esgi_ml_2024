@@ -2,7 +2,7 @@
 #include <valarray>
 #include <iostream>
 #include "MLP.hpp"
-#include "../ranges.hpp"
+#include "ranges.hpp"
 
 namespace MachineLearning {
     MLP::MLP(const std::vector<int> &npl, Activation a) {
