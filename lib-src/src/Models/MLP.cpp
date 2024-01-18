@@ -171,4 +171,8 @@ namespace MachineLearning {
     std::vector<std::vector<std::vector<double>>> MLP::get_weights() const {
         return weights;
     }
+
+    std::vector<int> MLP::get_dimensions() const {
+        return dimensions;
+    }
 }
