@@ -7,6 +7,15 @@ void info(){
     std::cout << "Test" << std::endl;
 }
 
+///Initialization functions
+void Init(){
+    srand(time(nullptr));
+}
+
+void Quit(){
+    delete_all_mlps();
+}
+
 ///MLP functions
 static std::vector<MachineLearning::MLP> MLPs;
 

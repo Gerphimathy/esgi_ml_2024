@@ -67,7 +67,7 @@ namespace MachineLearning {
         public:
             MLP(const std::vector<int>& layers, Activation a);
             std::vector<double> predict(const std::vector<double>& inputs, bool classify);
-            bool train(const std::vector<std::vector<double>>& X, const std::vector<std::vector<double>>& Y,
+            bool train(const std::vector<std::vector<double>>& X_In, const std::vector<std::vector<double>>& Y,
                        bool classify, double training_rate, unsigned int epochs, bool verbose = false,
                        Sampling sampling = RANDOM, unsigned int batch_size = 0);
             std::vector<std::vector<std::vector<double>>> get_weights() const;

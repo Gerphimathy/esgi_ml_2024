@@ -11,6 +11,8 @@ def to_cdouble_array(lst):
     else:
         raise ValueError('Input should be a list.')
 
+def cdouble_to_numpy_array(cdouble_array, size):
+    return np.ctypeslib.as_array(cdouble_array, shape=(size,))
 
 def to_cint_array(lst):
     if isinstance(lst, list):

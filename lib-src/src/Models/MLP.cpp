@@ -2,7 +2,7 @@
 #include <valarray>
 #include <iostream>
 #include "MLP.hpp"
-#include "ranges.hpp"
+#include "../ranges.hpp"
 
 namespace MachineLearning {
     MLP::MLP(const std::vector<int> &npl, Activation a) {
@@ -98,7 +98,7 @@ namespace MachineLearning {
     void MLP::propagate_backwards(const std::vector<double> &y, bool classify){
         for(int j = 1; j < dimensions[L]+1; j++){
             deltas[L][j] = X[L][j] - y[j-1];
-            if(classify) deltas[L][j] *= (1 - X[L][j]*X[L][j]);
+            if(!classify) deltas[L][j] *= (1 - X[L][j]*X[L][j]);
         }
 
         for(int l = L; l > 1; l--){
@@ -112,14 +112,14 @@ namespace MachineLearning {
         }
     }
 
-    bool MLP::train(const std::vector<std::vector<double>> &X, const std::vector<std::vector<double>> &Y, bool classify,
+    bool MLP::train(const std::vector<std::vector<double>> &X_In, const std::vector<std::vector<double>> &Y, bool classify,
                     double training_rate, unsigned int epochs, bool verbose,
                     Sampling sampling, unsigned int batch_size
                     ) {
-        if(X.size() != Y.size()) return false;
+        if(X_In.size() != Y.size()) return false;
         if(sampling == MINI_BATCH_GRADIANT_DESCENT){
             if(batch_size == 0) return false;
-            if(batch_size > X.size()) return false;
+            if(batch_size > X_In.size()) return false;
         }
         for(int e = 0; e < epochs; e++){
             if(verbose) std::cout << "Epoch " << e+1 << "/" << epochs << "\n";
@@ -129,16 +129,16 @@ namespace MachineLearning {
             int k;
             switch (sampling) {
                 case RANDOM:
-                    k = randomInt(0, X.size()-1);
-                    x = X[k];
+                    k = randomInt(0, X_In.size() - 1);
+                    x = X_In[k];
                     y = Y[k];
                     propagate_forward(x, classify);
                     propagate_backwards(y, classify);
                     process_weights(training_rate);
                     break;
                 case BATCH_GRADIANT_DESCENT:
-                    for (int i = 0; i < X.size(); ++i) {
-                        x = X[i];
+                    for (int i = 0; i < X_In.size(); ++i) {
+                        x = X_In[i];
                         y = Y[i];
                         propagate_forward(x, classify);
                         propagate_backwards(y, classify);
@@ -146,8 +146,8 @@ namespace MachineLearning {
                     process_weights(training_rate);
                     break;
                 case STOCHASTIC_GRADIANT_DESCENT:
-                    for (int i = 0; i < X.size(); i++) {
-                        x = X[i];
+                    for (int i = 0; i < X_In.size(); i++) {
+                        x = X_In[i];
                         y = Y[i];
                         propagate_forward(x, classify);
                         propagate_backwards(y, classify);
@@ -155,9 +155,9 @@ namespace MachineLearning {
                     }
                     break;
                 case MINI_BATCH_GRADIANT_DESCENT:
-                    k = randomInt(0, X.size()-batch_size);
+                    k = randomInt(0, X_In.size() - batch_size);
                     for (int i = k; i < k + batch_size; ++i) {
-                        x = X[i];
+                        x = X_In[i];
                         y = Y[i];
                         propagate_forward(x, classify);
                         propagate_backwards(y, classify);

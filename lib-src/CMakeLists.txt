@@ -13,9 +13,10 @@ option(ML_SHARED_BUILD "Use the MachineLearning library in shared mode." ON)
 set(ML_SRC_FILES
         include/ext.h
         src/ext.cpp
-     #main.cpp
         src/ranges.cpp
         src/ranges.hpp
+        # TODO: Remove main.cpp
+        src/main.cpp
         src/Models/Linear.cpp
         src/Models/Linear.hpp
         src/Models/MLP.cpp
@@ -71,3 +72,17 @@ install(TARGETS ${LIBRARY_TARGET_NAME}
 
 
 message(STATUS "Created target ${LIBRARY_TARGET_NAME} for export ${PROJECT_NAME}.")
+
+# Also make an executable for testing purposes (memleaks)
+# TODO: Remove
+add_executable(${PROJECT_NAME}_test
+        src/main.cpp
+        src/Models/Linear.cpp
+        src/Models/Linear.hpp
+        src/Models/MLP.cpp
+        src/Models/MLP.hpp
+        src/ranges.cpp
+        src/ranges.hpp
+        #src/ext.cpp
+        #src/ext.hpp
+        )

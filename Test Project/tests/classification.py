@@ -119,7 +119,7 @@ def MLP_Cross(libc):
                 color='red')
 
     libc.train_mlp(test_model, np_2d_array_to_cdouble_array(X), np_2d_array_to_cdouble_array(Y), 500, True,
-                   c_double(0.00001), 100000, 2)
+                   c_double(0.0001), 10000, 2)
 
     # Test the model
     x = np.linspace(-1, 1, 100)
@@ -138,13 +138,15 @@ def MLP_Cross(libc):
 
 
 def MLP_3_Classes(libc):
-    test_model = libc.create_mlp(to_cint_array([2, 3, 3, 3]), 4, 1)
+    test_model = libc.create_mlp(to_cint_array([2, 4, 3]), 3, 1)
 
     X = np.random.random((500, 2)) * 2.0 - 1.0
     Y = np.array([[1, 0, 0] if -p[0] - p[1] - 0.5 > 0 and p[1] < 0 and p[0] - p[1] - 0.5 < 0 else
                   [0, 1, 0] if -p[0] - p[1] - 0.5 < 0 and p[1] > 0 and p[0] - p[1] - 0.5 < 0 else
                   [0, 0, 1] if -p[0] - p[1] - 0.5 < 0 and p[1] < 0 and p[0] - p[1] - 0.5 > 0 else
                   [0, 0, 0] for p in X])
+
+    libc.train_mlp(test_model, np_2d_array_to_cdouble_array(X), np_2d_array_to_cdouble_array(Y), 500, True, c_double(0.00001), 10000, 2)
 
     X = X[[not np.all(arr == [0, 0, 0]) for arr in Y]]
     Y = Y[[not np.all(arr == [0, 0, 0]) for arr in Y]]
@@ -159,20 +161,52 @@ def MLP_3_Classes(libc):
                 np.array(list(map(lambda elt: elt[1], filter(lambda c: Y[c[0]][2] == 1, enumerate(X)))))[:, 1],
                 color='green')
 
-    X = np_2d_array_to_cdouble_array(X)
-    Y = np_2d_array_to_cdouble_array(Y)
-
-    libc.train_mlp(test_model, X, Y, 500, True, c_double(0.00001), 10000, 2)
-
-    # Test the model, 3 classes classification, red blue green
     x = np.linspace(-1, 1, 100)
     y = np.linspace(-1, 1, 100)
     xx, yy = np.meshgrid(x, y)
-    pred = np.zeros((100, 100))
+    pred = np.zeros((100, 100, 3))
     for i in range(100):
         for j in range(100):
-            pred[i, j] = np.argmax(libc.predict_mlp(test_model, to_cdouble_array([xx[i, j], yy[i, j]]), True))[0]
+            p = libc.predict_mlp(test_model, to_cdouble_array([xx[i, j], yy[i, j]]), True)
+            pred[i, j] = cdouble_to_numpy_array(p, 3)
 
+    pred = np.argmax(pred, axis=2)
+    plt.contourf(xx, yy, pred, cmap='RdBu', alpha=0.5)
+    plt.colorbar()
+
+    plt.show()
+    plt.clf()
+
+def MLP_Multi_Cross(libc):
+    test_model = libc.create_mlp(to_cint_array([2, 16, 16, 3]), 4, 1)
+
+    X = np.random.random((1000, 2)) * 2.0 - 1.0
+    Y = np.array([[1, 0, 0] if abs(p[0] % 0.5) <= 0.25 and abs(p[1] % 0.5) > 0.25 else [0, 1, 0] if abs(
+        p[0] % 0.5) > 0.25 and abs(p[1] % 0.5) <= 0.25 else [0, 0, 1] for p in X])
+
+    plt.scatter(np.array(list(map(lambda elt: elt[1], filter(lambda c: Y[c[0]][0] == 1, enumerate(X)))))[:, 0],
+                np.array(list(map(lambda elt: elt[1], filter(lambda c: Y[c[0]][0] == 1, enumerate(X)))))[:, 1],
+                color='blue')
+    plt.scatter(np.array(list(map(lambda elt: elt[1], filter(lambda c: Y[c[0]][1] == 1, enumerate(X)))))[:, 0],
+                np.array(list(map(lambda elt: elt[1], filter(lambda c: Y[c[0]][1] == 1, enumerate(X)))))[:, 1],
+                color='red')
+    plt.scatter(np.array(list(map(lambda elt: elt[1], filter(lambda c: Y[c[0]][2] == 1, enumerate(X)))))[:, 0],
+                np.array(list(map(lambda elt: elt[1], filter(lambda c: Y[c[0]][2] == 1, enumerate(X)))))[:, 1],
+                color='green')
+
+    libc.train_mlp(test_model, np_2d_array_to_cdouble_array(X), np_2d_array_to_cdouble_array(Y), 1000, True,
+                   c_double(0.00001), 10000, 2)
+
+    x = np.linspace(-1, 1, 100)
+    y = np.linspace(-1, 1, 100)
+    xx, yy = np.meshgrid(x, y)
+    pred = np.zeros((100, 100, 3))
+    for i in range(100):
+        for j in range(100):
+            p = libc.predict_mlp(test_model, to_cdouble_array([xx[i, j], yy[i, j]]), True)
+            pred[i, j] = cdouble_to_numpy_array(p, 3)
+
+    pred = np.argmax(pred, axis=2)
     plt.contourf(xx, yy, pred, cmap='RdBu', alpha=0.5)
     plt.colorbar()
 

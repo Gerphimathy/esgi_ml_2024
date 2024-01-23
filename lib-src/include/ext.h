@@ -5,6 +5,10 @@ extern "C"{
     ///Test functions
     ML_API void info();
 
+    ///Initialization functions
+    ML_API void Init();
+    ML_API void Quit();
+
     ///MLP functions
     ML_API void delete_mlp(int index);
     ML_API void delete_all_mlps();
