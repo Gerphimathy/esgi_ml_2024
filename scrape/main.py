@@ -10,8 +10,9 @@ options = Options()
 options.add_argument("start-maximized")
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
-max_scrape = 45000
+max_scrape = 100000
 first_url = 'https://www.rottentomatoes.com/m/leave_no_trace'
+no_poster = "https://images.fandango.com/cms/assets/5d84d010-59b1-11ea-b175-791e911be53d--rt-poster-defaultgif.gif"
 
 movies_to_parse = queue.Queue()
 urls = set()
@@ -41,7 +42,7 @@ with open('movies.csv', 'a') as f:
 
         # clear console and print progress
         os.system('cls' if os.name == 'nt' else 'clear')
-        print(f'Parsing {url} ({urls.__len__()} / {max_scrape})')
+        print(f'Parsing {url} ({urls.__len__()} / {max_scrape} | {movies_to_parse.qsize()} in queue)')
 
         driver.get(url)
         soup = BeautifulSoup(driver.page_source, 'html.parser')
@@ -65,6 +66,8 @@ with open('movies.csv', 'a') as f:
         try:
             main = soup.find('div', {'class': 'movie-thumbnail-wrap'})
             rt_img = main.find('rt-img')
+            if rt_img == no_poster:
+                continue
             poster = rt_img['src']
         except:
             continue
@@ -79,7 +82,10 @@ with open('movies.csv', 'a') as f:
             continue
 
         # Get all a tags and get the href attributes
-        for a in recommendations.find_all('a'):
-            href = a['href']
-            if href.startswith('/m/') and href not in urls:
-                movies_to_parse.put(f'https://www.rottentomatoes.com{href}')
+        try:
+            for a in recommendations.find_all('a'):
+                href = a['href']
+                if href.startswith('/m/') and href not in urls:
+                    movies_to_parse.put(f'https://www.rottentomatoes.com{href}')
+        except:
+            continue
