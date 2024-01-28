@@ -10,7 +10,7 @@ options = Options()
 options.add_argument("start-maximized")
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
-max_scrape = 100000
+max_scrape = 40000
 first_url = 'https://www.rottentomatoes.com/m/leave_no_trace'
 no_poster = "https://images.fandango.com/cms/assets/5d84d010-59b1-11ea-b175-791e911be53d--rt-poster-defaultgif.gif"
 
@@ -44,8 +44,11 @@ with open('movies.csv', 'a') as f:
         os.system('cls' if os.name == 'nt' else 'clear')
         print(f'Parsing {url} ({urls.__len__()} / {max_scrape} | {movies_to_parse.qsize()} in queue)')
 
-        driver.get(url)
-        soup = BeautifulSoup(driver.page_source, 'html.parser')
+        try:
+            driver.get(url)
+            soup = BeautifulSoup(driver.page_source, 'html.parser')
+        except:
+            continue
 
         # if we encounter a captcha, we stop the script and ask the user to solve it
         if soup.find('div', {'id': 'recaptcha'}) is not None:
