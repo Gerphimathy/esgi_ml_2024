@@ -10,12 +10,17 @@ namespace MachineLearning {
             int N;
 
         public:
-            Linear(int n, double b);
+            Linear(int n, double b = 0);
+
+            Linear(const char* filename);
+
             void train(const std::vector<std::vector<double>>& X, const std::vector<double>& Y,
                        double learning_rate, int epochs);
             double predict(const std::vector<double>& x)const;
             bool setWeight(double w, int i);
             void setBias(double b);
             std::vector<double> getWeights()const{return weights;}
+
+            void serialize(const char* filename)const;
     };
 }

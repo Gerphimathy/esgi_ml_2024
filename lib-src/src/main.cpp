@@ -9,7 +9,7 @@
 
 int main() {
     int n_points = 500;
-    int epochs = 10000;
+    int epochs = 100;
     double training_rate = 0.00001;
     MachineLearning::Activation activation = MachineLearning::TANH;
     MachineLearning::Sampling sampling = MachineLearning::STOCHASTIC_GRADIANT_DESCENT;
@@ -39,7 +39,12 @@ int main() {
     }
 
     mlp.train(X, Y, classify, training_rate, epochs, verbose, sampling);
-    std::cout << mlp.predict({0.0, 0.0}, classify)[0] << " " << mlp.predict({0.0, 0.0}, classify)[1] << " " << mlp.predict({0.0, 0.0}, classify)[2] << std::endl;
+
+    mlp.serialize("test.txt");
+
+    auto mlp2 = MachineLearning::MLP("test.txt");
+
+    mlp2.serialize("test2.txt");
 
     return 0;
 }

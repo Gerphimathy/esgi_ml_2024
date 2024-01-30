@@ -3,6 +3,7 @@
 #include <iostream>
 #include "MLP.hpp"
 #include "../ranges.hpp"
+#include <fstream>
 
 namespace MachineLearning {
     MLP::MLP(const std::vector<int> &npl, Activation a) {
@@ -37,6 +38,107 @@ namespace MachineLearning {
             }
         }
     }
+
+    void MLP::serialize(const char *filename) const {
+        std::ofstream file(filename);
+        if(file.is_open()){
+            file << activation << std::endl;
+            file << L << std::endl;
+            for (int i = 0; i < L+1; ++i) {
+                file << dimensions[i] << std::endl;
+            }
+
+            file << weights.size() << std::endl;
+            for (const auto & weight : weights) {
+                file << weight.size() << std::endl;
+                for (const auto & j : weight) {
+                    file << j.size() << std::endl;
+                    for (double k : j) {
+                        file << k << std::endl;
+                    }
+                }
+            }
+
+            file << X.size() << std::endl;
+            for (const auto & i : X) {
+                file << i.size() << std::endl;
+                for (double j : i) {
+                    file << j << std::endl;
+                }
+            }
+
+            file << deltas.size() << std::endl;
+            for (const auto & delta : deltas) {
+                file << delta.size() << std::endl;
+                for (double j : delta) {
+                    file << j << std::endl;
+                }
+            }
+
+            file.close();
+        } else {
+            std::cout << "Unable to open file" << std::endl;
+        }
+    }
+
+    MLP::MLP(const char *filename) {
+        std::ifstream file(filename);
+        if(file.is_open()){
+            int a;
+            file >> a;
+            activation = get_activation(a);
+
+            file >> L;
+            dimensions = std::vector<int>(L+1, 0);
+            for (int i = 0; i < L+1; ++i) {
+                file >> dimensions[i];
+            }
+
+            int size;
+            file >> size;
+            weights = std::vector<std::vector<std::vector<double>>>(size);
+            for (int i = 0; i < size; ++i) {
+                int size2;
+                file >> size2;
+                weights[i] = std::vector<std::vector<double>>(size2);
+                for (int j = 0; j < size2; ++j) {
+                    int size3;
+                    file >> size3;
+                    weights[i][j] = std::vector<double>(size3);
+                    for (int k = 0; k < size3; ++k) {
+                        file >> weights[i][j][k];
+                    }
+                }
+            }
+
+            file >> size;
+            X = std::vector<std::vector<double>>(size);
+            for (int i = 0; i < size; ++i) {
+                int size2;
+                file >> size2;
+                X[i] = std::vector<double>(size2);
+                for (int j = 0; j < size2; ++j) {
+                    file >> X[i][j];
+                }
+            }
+
+            file >> size;
+            deltas = std::vector<std::vector<double>>(size);
+            for (int i = 0; i < size; ++i) {
+                int size2;
+                file >> size2;
+                deltas[i] = std::vector<double>(size2);
+                for (int j = 0; j < size2; ++j) {
+                    file >> deltas[i][j];
+                }
+            }
+
+            file.close();
+        } else {
+            std::cout << "Unable to open file" << std::endl;
+        }
+    }
+
 
     double MLP::activate(double x) {
         switch(activation){
