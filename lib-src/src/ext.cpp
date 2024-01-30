@@ -100,3 +100,14 @@ double* predict_mlp(int MLP, double* X, bool classify){
 
     return ret;
 }
+
+bool serialize_mlp(int MLP, const char* filename){
+    if(MLP < 0 || MLP >= MLPs.size()) return false;
+    MLPs[MLP].serialize(filename);
+    return true;
+}
+
+int deserialize_mlp(const char* filename){
+    MLPs.emplace_back(filename);
+    return MLPs.size() - 1;
+}

@@ -16,4 +16,6 @@ extern "C"{
     ML_API bool train_mlp(int MLP, double** X, double** Y, unsigned int size,
                           bool classify, double training_rate, unsigned int epochs, int sampling, unsigned int batch_size = 0);
     ML_API double* predict_mlp(int MLP, double* X, bool classify);
+    ML_API bool serialize_mlp(int MLP, const char* filename);
+    ML_API int deserialize_mlp(const char* filename);
 }
