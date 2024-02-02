@@ -1,5 +1,5 @@
 .idea
 venv
-_movies.csv
-resized_images
 images
+resized_images
+_movies.csv
