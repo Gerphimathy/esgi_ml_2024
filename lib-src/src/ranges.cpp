@@ -28,6 +28,24 @@ namespace MachineLearning{
         if(old_max == old_min) return 0.0;
         return (x - old_min) * (new_max - new_min) / (old_max - old_min) + new_min;
     }
+
+    double distance(const std::vector<double> &x, const std::vector<double> &y){
+        if(x.size() != y.size()) return -1.0;
+
+        double dist = 0.0;
+        for(int i = 0; i < x.size(); i++){
+            dist += (x[i] - y[i]) * (x[i] - y[i]);
+        }
+        return sqrt(dist);
+    }
+
+    double mean(const std::vector<double> &x){
+        double sum = 0.0;
+        for(auto i : x){
+            sum += i;
+        }
+        return sum / x.size();
+    }
 }
 
 

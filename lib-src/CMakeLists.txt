@@ -13,14 +13,18 @@ option(ML_SHARED_BUILD "Use the MachineLearning library in shared mode." ON)
 set(ML_SRC_FILES
         include/ext.h
         src/ext.cpp
+
         src/ranges.cpp
         src/ranges.hpp
-        # TODO: Remove main.cpp
-        src/main.cpp
+
         src/Models/Linear.cpp
         src/Models/Linear.hpp
+
         src/Models/MLP.cpp
         src/Models/MLP.hpp
+
+        src/Models/RBF.cpp
+        src/Models/RBF.hpp
 )
 
 if(ML_SHARED_BUILD)
@@ -83,6 +87,8 @@ add_executable(${PROJECT_NAME}_test
         src/Models/MLP.hpp
         src/ranges.cpp
         src/ranges.hpp
+        src/Models/RBF.cpp
+        src/Models/RBF.hpp
         #src/ext.cpp
         #src/ext.hpp
         )
