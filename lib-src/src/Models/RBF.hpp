@@ -10,5 +10,5 @@ namespace MachineLearning {
     class RBF {
         public:
             RBF();
-    }
+    };
 }

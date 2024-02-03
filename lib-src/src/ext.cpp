@@ -1,6 +1,7 @@
 #include "ext.h"
 #include <iostream>
 #include "Models/MLP.hpp"
+#include "Models/Linear.hpp"
 
 ///Test functions
 void info(){
@@ -14,6 +15,7 @@ void Init(){
 
 void Quit(){
     delete_all_mlps();
+    delete_all_linears();
 }
 
 ///MLP functions
@@ -110,4 +112,66 @@ bool serialize_mlp(int MLP, const char* filename){
 int deserialize_mlp(const char* filename){
     MLPs.emplace_back(filename);
     return MLPs.size() - 1;
+}
+
+
+///Linear functions
+
+static std::vector<MachineLearning::Linear> Linears;
+void delete_linear(int index) {
+    if(index < 0 || index >= Linears.size()) return;
+    Linears[index].~Linear();
+    Linears.erase(Linears.begin() + index);
+}
+
+void delete_all_linears() {
+    for(auto& linear : Linears){
+        linear.~Linear();
+    }
+}
+
+int create_linear(int n, double b) {
+    if(n < 1) return -1;
+    Linears.emplace_back(n, b);
+    return Linears.size() - 1;
+}
+
+bool train_linear(int linear, double **X, double *Y, unsigned int size, double learning_rate, unsigned int epochs) {
+    if(linear < 0 || linear >= Linears.size()) return false;
+
+    std::vector<std::vector<double>> x = std::vector<std::vector<double>>(size);
+    std::vector<double> y = std::vector<double>(size);
+
+    int x_size = Linears[linear].getWeights().size();
+
+    try{
+        for (int i = 0; i < size; ++i) {
+            x[i] = std::vector<double>(x_size);
+            for (int j = 0; j < x_size; ++j) x[i][j] = X[i][j];
+            y[i] = Y[i];
+        }
+    } catch (std::exception& e){
+        return false;
+    }
+
+    Linears[linear].train(x, y, learning_rate, epochs);
+    return true;
+}
+
+double predict_linear(int linear, double *x) {
+    if(linear < 0 || linear >= Linears.size()) return 0;
+
+    return Linears[linear].predict(std::vector<double>(x, x + Linears[linear].getWeights().size()));
+
+}
+
+int serialize_linear(int linear, const char *filename) {
+    if(linear < 0 || linear >= Linears.size()) return -1;
+    Linears[linear].serialize(filename);
+    return 0;
+}
+
+int deserialize_linear(const char *filename) {
+    Linears.emplace_back(filename);
+    return Linears.size() - 1;
 }

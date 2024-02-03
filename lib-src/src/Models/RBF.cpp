@@ -51,8 +51,4 @@ namespace MachineLearning {
     double rbf(const vector<double>& x, const vector<double>& c, double sigma){
         return exp(-pow(distance(x, c), 2) / (2 * pow(sigma, 2)));
     }
-
-    RBF::RBF() {
-
-    }
 }
