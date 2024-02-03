@@ -2,3 +2,4 @@ __pycache__
 .venv
 resized_images
 model.txt
+_model.txt
